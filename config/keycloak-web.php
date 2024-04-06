@@ -20,21 +20,21 @@ return [
      *
      * @see Keycloak >> Realm Settings >> Keys >> RS256 >> Public Key
      */
-    'realm_public_key' => env('KEYCLOAK_REALM_PUBLIC_KEY', null),
+    'realm_public_key' => env('KEYCLOAK_REALM_PUBLIC_KEY'),
 
     /**
      * Keycloak Client ID
      *
      * @see Keycloak >> Clients >> Installation
      */
-    'client_id' => env('KEYCLOAK_CLIENT_ID', null),
+    'client_id' => env('KEYCLOAK_CLIENT_ID'),
 
     /**
      * Keycloak Client Secret
      *
      * @see Keycloak >> Clients >> Installation
      */
-    'client_secret' => env('KEYCLOAK_CLIENT_SECRET', null),
+    'client_secret' => env('KEYCLOAK_CLIENT_SECRET'),
 
     /**
      * We can cache the OpenId Configuration
@@ -43,6 +43,13 @@ return [
      * @link https://www.keycloak.org/docs/3.2/securing_apps/topics/oidc/oidc-generic.html
      */
     'cache_openid' => env('KEYCLOAK_CACHE_OPENID', false),
+
+    /**
+     * Client suggested IDP
+     *
+     * @link https://www.keycloak.org/docs/latest/server_admin/#_client_suggested_idp
+     */
+    'client_suggested_idp' => env('KEYCLOAK_CLIENT_SUGGESTED_IDP'),
 
     /**
      * Page to redirect after callback if there's no "intent"
@@ -68,9 +75,9 @@ return [
     ],
 
     /**
-    * GuzzleHttp Client options
-    *
-    * @link http://docs.guzzlephp.org/en/stable/request-options.html
-    */
-   'guzzle_options' => [],
+     * GuzzleHttp Client options
+     *
+     * @link http://docs.guzzlephp.org/en/stable/request-options.html
+     */
+    'guzzle_options' => [],
 ];

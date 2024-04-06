@@ -147,6 +147,8 @@ class KeycloakService
     public function getLoginUrl()
     {
         $url = $this->getOpenIdValue('authorization_endpoint');
+        $clientSuggestedIdp = config('keycloak-web.client_suggested_idp');
+
         $params = [
             'scope' => 'openid',
             'response_type' => 'code',
@@ -154,6 +156,10 @@ class KeycloakService
             'redirect_uri' => $this->callbackUrl,
             'state' => $this->getState(),
         ];
+
+        if (!empty($clientSuggestedIdp)) {
+            $params['kc_idp_hint'] = $clientSuggestedIdp;
+        }
 
         return $this->buildUrl($url, $params);
     }
@@ -174,8 +180,9 @@ class KeycloakService
         $params = [
             'client_id' => $this->getClientId()
         ];
+
         $token = $this->retrieveToken();
-        if (! empty($token['id_token'])) {
+        if (!empty($token['id_token'])) {
             $params['post_logout_redirect_uri'] = $this->redirectLogout;
             $params['id_token_hint'] = $token['id_token'];
         }
@@ -195,10 +202,11 @@ class KeycloakService
         $url = $this->getLoginUrl();
         return str_replace('/auth?', '/registrations?', $url);
     }
+
     /**
      * Get access token from Code
      *
-     * @param  string $code
+     * @param string $code
      * @return array
      */
     public function getAccessToken($code)
@@ -211,7 +219,7 @@ class KeycloakService
             'redirect_uri' => $this->callbackUrl,
         ];
 
-        if (! empty($this->clientSecret)) {
+        if (!empty($this->clientSecret)) {
             $params['client_secret'] = $this->clientSecret;
         }
 
@@ -234,7 +242,7 @@ class KeycloakService
     /**
      * Refresh access token
      *
-     * @param  string $refreshToken
+     * @param string $refreshToken
      * @return array
      */
     public function refreshAccessToken($credentials)
@@ -251,7 +259,7 @@ class KeycloakService
             'redirect_uri' => $this->callbackUrl,
         ];
 
-        if (! empty($this->clientSecret)) {
+        if (!empty($this->clientSecret)) {
             $params['client_secret'] = $this->clientSecret;
         }
 
@@ -274,7 +282,7 @@ class KeycloakService
     /**
      * Invalidate Refresh
      *
-     * @param  string $refreshToken
+     * @param string $refreshToken
      * @return array
      */
     public function invalidateRefreshToken($refreshToken)
@@ -285,7 +293,7 @@ class KeycloakService
             'refresh_token' => $refreshToken,
         ];
 
-        if (! empty($this->clientSecret)) {
+        if (!empty($this->clientSecret)) {
             $params['client_secret'] = $this->clientSecret;
         }
 
@@ -301,7 +309,7 @@ class KeycloakService
 
     /**
      * Get access token from Code
-     * @param  array $credentials
+     * @param array $credentials
      * @return array
      */
     public function getUserProfile($credentials)
@@ -391,7 +399,7 @@ class KeycloakService
     public function validateState($state)
     {
         $challenge = session()->get(self::KEYCLOAK_SESSION_STATE);
-        return (! empty($state) && ! empty($challenge) && $challenge === $state);
+        return (!empty($state) && !empty($challenge) && $challenge === $state);
     }
 
     /**
@@ -419,8 +427,8 @@ class KeycloakService
     /**
      * Build a URL with params
      *
-     * @param  string $url
-     * @param  array $params
+     * @param string $url
+     * @param array $params
      * @return string
      */
     public function buildUrl($url, $params)
@@ -430,7 +438,7 @@ class KeycloakService
             return trim($url, '?') . '?' . http_build_query($params);
         }
 
-        if (! empty($parsedUrl['port'])) {
+        if (!empty($parsedUrl['port'])) {
             $parsedUrl['host'] .= ':' . $parsedUrl['port'];
         }
 
@@ -440,7 +448,7 @@ class KeycloakService
         $url = $parsedUrl['scheme'] . '://' . $parsedUrl['host'] . $parsedUrl['path'];
         $query = [];
 
-        if (! empty($parsedUrl['query'])) {
+        if (!empty($parsedUrl['query'])) {
             $parsedUrl['query'] = explode('&', $parsedUrl['query']);
 
             foreach ($parsedUrl['query'] as $value) {
@@ -485,12 +493,12 @@ class KeycloakService
     /**
      * Return a value from the Open ID Configuration
      *
-     * @param  string $key
+     * @param string $key
      * @return string
      */
     protected function getOpenIdValue($key)
     {
-        if (! $this->openid) {
+        if (!$this->openid) {
             $this->openid = $this->getOpenIdConfiguration();
         }
 
@@ -510,7 +518,7 @@ class KeycloakService
         if ($this->cacheOpenid) {
             $configuration = Cache::get($cacheKey, []);
 
-            if (! empty($configuration)) {
+            if (!empty($configuration)) {
                 return $configuration;
             }
         }
@@ -545,17 +553,17 @@ class KeycloakService
     /**
      * Check we need to refresh token and refresh if needed
      *
-     * @param  array $credentials
+     * @param array $credentials
      * @return array
      */
     protected function refreshTokenIfNeeded($credentials)
     {
-        if (! is_array($credentials) || empty($credentials['access_token']) || empty($credentials['refresh_token'])) {
+        if (!is_array($credentials) || empty($credentials['access_token']) || empty($credentials['refresh_token'])) {
             return $credentials;
         }
 
         $token = new KeycloakAccessToken($credentials);
-        if (! $token->hasExpired()) {
+        if (!$token->hasExpired()) {
             return $credentials;
         }
 
@@ -573,13 +581,13 @@ class KeycloakService
     /**
      * Log a GuzzleException
      *
-     * @param  GuzzleException $e
+     * @param GuzzleException $e
      * @return void
      */
     protected function logException(GuzzleException $e)
     {
         // Guzzle 7
-        if (! method_exists($e, 'getResponse') || empty($e->getResponse())) {
+        if (!method_exists($e, 'getResponse') || empty($e->getResponse())) {
             Log::error('[Keycloak Service] ' . $e->getMessage());
             return;
         }
